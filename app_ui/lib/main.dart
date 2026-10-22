@@ -159,7 +159,7 @@ class SplashScreen extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Row(crossAxisAlignment: CrossAxisAlignment.end, mainAxisAlignment: MainAxisAlignment.center,
-                      children: [for (final h in [280.0, 380, 420, 330, 260, 220])
+                      children: [for (var i = 0; i < 6; i++)
                         Container(width: 38, height: 0, margin: const EdgeInsets.all(4),
                             decoration: BoxDecoration(color: Colors.white.withOpacity(.12), borderRadius: BorderRadius.circular(6)))]),
                 ),
