@@ -96,7 +96,7 @@ jobs:
           test -d "$app"
           executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")
           test -f "$app/$executable"
-          lipo -verify_arch arm64 "$app/$executable"
+          lipo "$app/$executable" -verify_arch arm64
           mkdir -p dist/Payload
           cp -R "$app" dist/Payload/
           cd dist
