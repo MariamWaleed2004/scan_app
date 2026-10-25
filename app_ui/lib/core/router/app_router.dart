@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:app_ui/features/auth/presentation/pages/otp_page.dart';
+import 'package:app_ui/features/auth/presentation/pages/register_page.dart';
+import 'package:app_ui/features/scan/presentation/pages/scan_page.dart';
+import 'package:app_ui/features/shell/presentation/pages/main_shell.dart';
+import 'package:app_ui/features/splash/presentation/pages/splash_page.dart';
 import 'app_routes.dart';
 
 class AppRouter {

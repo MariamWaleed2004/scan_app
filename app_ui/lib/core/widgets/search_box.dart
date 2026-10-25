@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:app_ui/core/theme/app_colors.dart';
+import 'package:app_ui/core/theme/app_text_styles.dart';
 
 class SearchBox extends StatelessWidget {
   final String hint;

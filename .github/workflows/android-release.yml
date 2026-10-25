@@ -1,0 +1,158 @@
+name: Android APK and iOS IPA Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app_ui
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: app_ui/pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release --build-number "$GITHUB_RUN_NUMBER"
+
+      - name: Prepare download
+        run: |
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk dist/scan-app.apk
+          cd dist
+          sha256sum scan-app.apk > scan-app.apk.sha256
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: app_ui/dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  build-ios:
+    name: Build unsigned iOS IPA
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: app_ui
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version-file: app_ui/pubspec.yaml
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS device app without signing
+        run: flutter build ios --release --no-codesign --build-number "$GITHUB_RUN_NUMBER"
+
+      - name: Package and validate unsigned IPA
+        run: |
+          set -euo pipefail
+          app="build/ios/iphoneos/Runner.app"
+          test -d "$app"
+          executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Info.plist")
+          test -f "$app/$executable"
+          lipo -verify_arch arm64 "$app/$executable"
+          mkdir -p dist/Payload
+          cp -R "$app" dist/Payload/
+          cd dist
+          zip -q -r -y scan-app-unsigned.ipa Payload
+          unzip -t scan-app-unsigned.ipa
+          shasum -a 256 scan-app-unsigned.ipa > scan-app-unsigned.ipa.sha256
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-ipa
+          path: |
+            app_ui/dist/*.ipa
+            app_ui/dist/*.ipa.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name != 'pull_request'
+    needs: [build, build-ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ios-unsigned-ipa
+          path: dist
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$REF_TYPE" == "tag" ]]; then
+            tag="$REF_NAME"
+          else
+            tag="build-${GITHUB_RUN_NUMBER}"
+          fi
+          if gh release view "$tag" > /dev/null 2>&1; then
+            gh release upload "$tag" dist/* --clobber
+          else
+            gh release create "$tag" dist/* \
+              --target "$COMMIT" \
+              --title "Scan App - $tag" \
+              --notes "Android: download scan-app.apk (debug signing, for testing). iOS: download scan-app-unsigned.ipa and sign it with Sideloadly before installing on an iPhone; it cannot be installed directly. SHA-256 checksums are included for both files. Build ${GITHUB_RUN_NUMBER}, commit ${COMMIT}."
+          fi
+          gh release view "$tag" --json url --jq '"APK and unsigned IPA release: " + .url' >> "$GITHUB_STEP_SUMMARY"
