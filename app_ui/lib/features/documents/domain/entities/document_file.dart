@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'folder_category.dart';
 
-class DocumentFile {
+class DocumentFile extends Equatable {
   final String id;
   final String name;
   final FolderCategory category;
@@ -18,4 +19,7 @@ class DocumentFile {
   });
 
   String get sizeLabel => '$sizeMb MB';
+
+  @override
+  List<Object?> get props => [id, name, category, sizeMb, modifiedLabel, timeLabel];
 }
