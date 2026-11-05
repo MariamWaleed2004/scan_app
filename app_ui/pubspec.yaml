@@ -14,6 +14,10 @@ dependencies:
   get_it: ^7.7.0 # Service locator (dependency wiring)
   dartz: ^0.10.1 # Either<Failure, T>
   equatable: ^2.0.5 # Value equality for states / entities / failures
+  camera: ^0.11.0+2 # Live camera preview + capture (scan)
+  pdf: ^3.11.1 # Build the scanned PDF
+  path_provider: ^2.1.4 # Where to save scanned PDFs
+  open_filex: ^4.5.0 # Open a saved PDF in the device viewer
 
 dev_dependencies:
   flutter_test:

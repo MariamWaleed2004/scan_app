@@ -1,5 +1,5 @@
-import 'package:fekra_house/features/auth/domain/entities/country.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fekra_house/features/auth/domain/entities/country.dart';
 
 void main() {
   test('Egypt is the default and first in the list', () {

@@ -3,6 +3,7 @@ import 'package:fekra_house/config/theme/app_colors.dart';
 import 'package:fekra_house/config/theme/app_text_styles.dart';
 import 'package:fekra_house/core/utils/validators.dart';
 import 'package:fekra_house/core/widgets/gradient_button.dart';
+import '../../../domain/entities/country.dart';
 import 'auth_field_label.dart';
 import 'auth_text_field.dart';
 import 'phone_input_field.dart';
@@ -27,6 +28,7 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   var _submitted = false;
+  var _country = Country.egypt;
   final _phone = TextEditingController();
   final _password = TextEditingController();
 
@@ -42,7 +44,7 @@ class _LoginFormState extends State<LoginForm> {
     setState(() => _submitted = true);
     if (!(_formKey.currentState?.validate() ?? false)) return;
     widget.onSubmit(
-      countryCode: PhoneInputField.defaultCountryCode,
+      countryCode: _country.dialCode,
       phone: _phone.text,
       password: _password.text,
     );
@@ -54,7 +56,15 @@ class _LoginFormState extends State<LoginForm> {
         autovalidateMode: _submitted ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const AuthFieldLabel('Phone Number', 'رقم الجوال'),
-          PhoneInputField(controller: _phone),
+          PhoneInputField(
+            controller: _phone,
+            country: _country,
+            onCountryChanged: (c) {
+              setState(() => _country = c);
+              // Re-check the number against the new country's rules once errors are visible.
+              if (_submitted) WidgetsBinding.instance.addPostFrameCallback((_) => _formKey.currentState?.validate());
+            },
+          ),
           const AuthFieldLabel('Password', 'كلمة المرور'),
           AuthTextField(
             hint: '••••••••••••',

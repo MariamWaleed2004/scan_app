@@ -14,6 +14,24 @@ Structure: **Feature-first · Cubit · GetIt** (see `Flutter_Developer_Structure
   flutter create . --project-name fekra_house
   ```
 
+## Camera / scan setup (Android & iOS)
+
+The Scan screen uses the device camera (`camera`), builds PDFs (`pdf`), saves them in the
+app's documents folder under `scans/` (`path_provider`) and opens them (`open_filex`).
+
+- **Android**: `minSdkVersion 21` or higher in `android/app/build.gradle`. The camera
+  permission is added by the plugin and requested on first use.
+- **iOS**: add to `ios/Runner/Info.plist`:
+
+  ```xml
+  <key>NSCameraUsageDescription</key>
+  <string>Fekra House uses the camera to scan your documents.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Not used for scanning; required by the camera plugin.</string>
+  ```
+- **Windows / web**: the scan screen shows "camera not available" (desktop camera
+  support needs the separate `camera_windows` package).
+
 ## Setup & run
 
 ```bash
@@ -60,7 +78,7 @@ lib/
     ├── folders/     domain · data · presentation (FoldersCubit, folders screen)
     ├── home/        presentation only — HomeCubit composes auth + documents use cases
     ├── profile/     presentation only — ProfileCubit reuses auth's GetCurrentUser
-    ├── scan/        presentation only (static UI; add domain/data when camera/OCR lands)
+    ├── scan/        domain · data · presentation (ScanCubit; camera capture → multi-page PDF)
     ├── shell/       presentation only — main_shell_screen.dart (bottom nav)
     └── splash/      presentation only
 ```

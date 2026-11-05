@@ -15,6 +15,7 @@ import 'package:fekra_house/features/home/presentation/view_model/home_cubit.dar
 import 'package:fekra_house/features/home/presentation/views/screens/home_screen.dart';
 import 'package:fekra_house/features/profile/presentation/view_model/profile_cubit.dart';
 import 'package:fekra_house/features/profile/presentation/views/screens/profile_screen.dart';
+import 'package:fekra_house/features/scan/presentation/view_model/scan_cubit.dart';
 import 'package:fekra_house/features/scan/presentation/views/screens/scan_screen.dart';
 import 'package:fekra_house/features/shell/presentation/views/screens/main_shell_screen.dart';
 import 'package:fekra_house/features/splash/presentation/views/screens/splash_screen.dart';
@@ -47,6 +48,9 @@ class AppRouter {
             BlocProvider(create: (_) => sl<ProfileCubit>()..load(), child: const ProfileScreen()),
           ],
         ),
-    AppRoutes.scan: (_) => const ScanScreen(),
+    AppRoutes.scan: (_) => BlocProvider(
+          create: (_) => sl<ScanCubit>(),
+          child: const ScanScreen(),
+        ),
   };
 }

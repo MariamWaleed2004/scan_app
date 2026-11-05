@@ -7,6 +7,7 @@ import 'package:fekra_house/core/widgets/error_view.dart';
 import 'package:fekra_house/core/widgets/loading_indicator.dart';
 import 'package:fekra_house/core/widgets/logo.dart';
 import '../../view_model/history_cubit.dart';
+import '../../../domain/entities/document_file.dart';
 import '../../view_model/history_state.dart';
 import '../widgets/file_tile.dart';
 import '../widgets/history_filter_pill.dart';
@@ -47,8 +48,22 @@ class _HistoryContent extends StatelessWidget {
         ]),
       );
 
+  Future<void> _open(BuildContext context, DocumentFile file) async {
+    final opened = await context.read<HistoryCubit>().openDocument(file);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Could not open this file. Is a PDF viewer installed?')));
+    }
+  }
+
   @override
-  Widget build(BuildContext context) => ListView(padding: const EdgeInsets.all(16), children: [
+  Widget build(BuildContext context) => RefreshIndicator(
+        color: AppColors.coral,
+        onRefresh: () => context.read<HistoryCubit>().load(showLoading: false),
+        child: ListView(
+            padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           const Logo(size: .45),
           Text('History', style: ts(15, c: Colors.black54)),
@@ -92,12 +107,14 @@ class _HistoryContent extends StatelessWidget {
           const EmptyView(
             icon: Icons.history,
             title: 'No scans yet',
-            message: 'Documents you scan or upload will show up here.',
+            message: 'Scan a document and tap “Save PDF”. It will show up here so you can open it any time.',
           ),
         for (final (i, g) in state.groups.where((g) => g.files.isNotEmpty).indexed) ...[
           _section(g.title, _dotColors[i % _dotColors.length], g.countLabel),
-          for (final f in g.files) FileTile(f, showTime: true),
+          for (final f in g.files)
+            FileTile(f, showTime: true, onTap: f.canOpen ? () => _open(context, f) : null),
         ],
         const SizedBox(height: 40),
-      ]);
+      ]),
+      );
 }

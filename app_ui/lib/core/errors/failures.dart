@@ -20,3 +20,8 @@ class CacheFailure extends Failure {
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure([super.message = 'Something went wrong.']);
 }
+
+/// Input that breaks a business rule (e.g. saving a scan with no pages).
+class ValidationFailure extends Failure {
+  const ValidationFailure(super.message);
+}
