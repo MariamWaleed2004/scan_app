@@ -15,3 +15,5 @@ linter:
     prefer_const_declarations: true
     prefer_final_fields: true
     always_use_package_imports: false
+    # Named params stay public so GetIt can construct Cubits from another library.
+    prefer_initializing_formals: false

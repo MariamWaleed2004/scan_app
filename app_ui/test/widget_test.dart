@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:app_ui/core/widgets/logo.dart';
+import 'package:fekra_house/core/widgets/logo.dart';
 
 void main() {
   testWidgets('Logo scales its three bars', (tester) async {

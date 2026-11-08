@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app_ui/core/theme/app_colors.dart';
+import 'package:fekra_house/config/theme/app_colors.dart';
 
 /// Loads data once (in initState) and renders loading / error / data states.
 /// Swap for Bloc / Riverpod later without touching the domain layer.
